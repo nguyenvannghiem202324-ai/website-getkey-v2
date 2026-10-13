@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f4f1">
+<title>GetKey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f4f1;--card:#fbfbf9;--ink:#111214;--mute:#6e6e69;--line:#dad9d3;--acc:#0b3d32;--brass:#9c7c38;--serif:'Fraunces',Georgia,serif;--sans:'Manrope',system-ui,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.65 var(--sans)}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+.w{max-width:1120px;margin:0 auto;padding:0 24px}
+nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 0;border-bottom:1px solid var(--line)}
+.brand{font:400 22px var(--serif);letter-spacing:-.01em;text-decoration:none}
+.links{display:flex;align-items:center;gap:26px;font-size:14px}
+.links a{text-decoration:none;color:var(--mute)}.links a:hover{color:var(--ink)}
+.lang{display:flex;border:1px solid var(--line);border-radius:2px}
+.lang button{border:0;background:none;padding:4px 10px;font-size:12px;color:var(--mute)}
+.lang button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--bg);padding:11px 22px;border-radius:2px;font-weight:600;font-size:14px;transition:background .2s,color .2s}
+.btn:hover{background:var(--acc);border-color:var(--acc)}
+.ghost{background:none;color:var(--ink);border-color:var(--line)}
+.ghost:hover{background:none;border-color:var(--ink)}
+button:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:72px;padding:88px 0 96px;align-items:end}
+h1{font:300 clamp(52px,8.4vw,116px)/.96 var(--serif);letter-spacing:-.035em;margin:0 0 28px}
+h1 span{display:block}
+.lead{max-width:44ch;color:var(--mute);font-size:17px;margin:0}
+.panel{background:var(--card);border:1px solid var(--line);padding:28px;border-radius:2px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:22px}
+.seg i{height:2px;background:var(--line);position:relative}
+.seg i::after{content:"";position:absolute;inset:0;background:var(--acc);transform:scaleX(0);transform-origin:left;transition:transform .5s}
+.seg i.on::after{transform:scaleX(1)}
+.panel h2{font:400 24px var(--serif);margin:0 0 4px}
+.panel .hint{color:var(--mute);font-size:13px;margin:0 0 20px}
+.gate{text-align:left}
+.row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+.row b{display:block;font-weight:600;font-size:14px}.row small{color:var(--mute);font-size:13px}
+.row .s{min-width:120px;padding:8px 14px;font-size:13px}
+.row[data-st=locked]{opacity:.45}.row[data-st=locked] .s{cursor:not-allowed}
+.row[data-st=done] .s{background:none;border-color:transparent;color:var(--acc);cursor:default}
+.row[data-st=loading] .s{background:none;color:var(--mute);border-color:var(--line);cursor:wait}
+.key{margin-top:6px;padding:18px;border:1px solid var(--brass);text-align:center}
+.key code{display:block;font:500 19px ui-monospace,Menlo,monospace;letter-spacing:.08em;margin-bottom:12px;word-break:break-all}
+.key small{display:block;color:var(--mute);margin-top:10px;font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stats div{padding:34px 0 30px}.stats div+div{padding-left:32px;border-left:1px solid var(--line)}
+.stats b{display:block;font:300 clamp(34px,5vw,56px)/1 var(--serif);letter-spacing:-.02em}
+.stats span{color:var(--mute);font-size:13px}
+section{padding:88px 0 0}
+.h{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:28px}
+.h h3{font:300 36px/1.1 var(--serif);letter-spacing:-.02em;margin:0}
+.h span{color:var(--mute);font-size:13px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:72px}
+.lb{width:100%;border-collapse:collapse;font-size:14px}
+.lb td,.lb th{padding:14px 0;border-top:1px solid var(--line);text-align:left;font-weight:400}
+.lb th{color:var(--mute);font-size:12px;border-top:0;padding-top:0}
+.lb td:first-child{width:44px;color:var(--mute);font-variant-numeric:tabular-nums}
+.lb td:last-child,.lb th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.lb tr:nth-child(2) td:first-child{color:var(--brass)}
+.guide{list-style:none;margin:0;padding:0;counter-reset:g}
+.guide li{counter-increment:g;display:grid;grid-template-columns:44px 1fr;padding:18px 0;border-top:1px solid var(--line)}
+.guide li::before{content:counter(g);font:300 26px/1 var(--serif);color:var(--brass)}
+.guide b{display:block;font-weight:600}.guide span{color:var(--mute);font-size:14px}
+details{border-top:1px solid var(--line)}details:last-of-type{border-bottom:1px solid var(--line)}
+summary{list-style:none;cursor:pointer;padding:20px 0;display:flex;justify-content:space-between;gap:16px;font-weight:500}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font:300 24px/1 var(--serif);color:var(--mute)}
+details[open] summary::after{content:"\2212"}
+details p{margin:0 0 20px;color:var(--mute);max-width:62ch}
+.help{margin-top:88px;background:var(--ink);color:var(--bg);padding:56px 0}
+.help .w{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.help h3{font:300 34px/1.15 var(--serif);margin:0 0 6px;letter-spacing:-.02em}
+.help p{margin:0;color:#a9a9a2}
+.help .btn{background:var(--bg);color:var(--ink);border-color:var(--bg)}
+.help .btn:hover{background:var(--brass);border-color:var(--brass);color:#fff}
+footer{padding:24px 0 32px;color:var(--mute);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,24px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:2px;font-size:14px;transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+html{-webkit-text-size-adjust:100%}
+body{-webkit-tap-highlight-color:transparent}
+button,summary,a{touch-action:manipulation}
+a.btn{text-decoration:none;display:inline-block;text-align:center}
+.key code{-webkit-user-select:all;user-select:all}
+.mlinks{display:none}
+@media(max-width:860px){
+ .links a{display:none}
+ .hero,.two{grid-template-columns:1fr;gap:44px}
+ .hero{padding:40px 0 56px}
+}
+@media(max-width:640px){
+ .w{padding:0 18px}
+ nav{padding:14px 0;gap:10px}
+ .brand{font-size:20px}
+ .links{gap:8px;min-width:0}
+ #login{padding:9px 12px;font-size:13px;min-height:40px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ #login:not(.in){display:none}   /* chưa đăng nhập: nút to trong khung Nhận key là đủ */
+ .lang button{padding:9px 10px}
+ .mlinks{display:flex;gap:24px;overflow-x:auto;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;scrollbar-width:none}
+ .mlinks::-webkit-scrollbar{display:none}
+ .mlinks a{color:var(--mute);text-decoration:none;white-space:nowrap;padding:6px 0}
+ h1{font-size:clamp(44px,13.5vw,60px);margin-bottom:20px}
+ .lead{font-size:16px}
+ .panel{padding:20px}
+ .panel h2{font-size:22px}
+ .btn{min-height:46px}
+ .row{flex-wrap:wrap;gap:10px;padding:14px 0}
+ .row>div{flex:1 1 100%}
+ .row .s{width:100%}
+ .key code{font-size:17px}
+ .stats b{font-size:28px}
+ .stats div{padding:24px 0 20px}
+ .stats div+div{padding-left:12px}
+ section{padding-top:64px}
+ .h h3{font-size:28px}
+ .lb td,.lb th{padding:12px 0}
+ summary{padding:18px 0;font-size:15px}
+ .help{margin-top:64px;padding:44px 0}
+ .help h3{font-size:28px}
+ .help .w>div,.help .btn{flex:1 1 100%}
+ footer{flex-direction:column;gap:4px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="w">
+<nav>
+ <a class="brand" href="#">GetKey</a>
+ <div class="links">
+  <a href="#guide" data-i="nGuide"></a><a href="#faq" data-i="nFaq"></a><a href="#support" data-i="nSup"></a>
+  <div class="lang" role="group" aria-label="Language"><button data-l="vi">VI</button><button data-l="en">EN</button></div>
+  <button class="btn ghost" id="login"></button>
+ </div>
+</nav>
+<div class="mlinks"><a href="#guide" data-i="nGuide"></a><a href="#faq" data-i="nFaq"></a><a href="#support" data-i="nSup"></a></div>
+
+<header class="hero">
+ <div>
+  <h1><span data-i="h1a"></span><span data-i="h1b"></span></h1>
+  <p class="lead" data-i="lead"></p>
+ </div>
+ <div class="panel" id="panel">
+  <div class="seg"><i></i><i></i><i></i></div>
+  <h2 data-i="pTitle"></h2>
+  <p class="hint" id="hint"></p>
+  <div id="gate" class="gate"><button class="btn" id="gateBtn" style="width:100%"></button></div>
+  <div id="flow" hidden>
+   <div id="rows"></div>
+   <div class="key" id="key" hidden><code id="kt"></code><button class="btn" id="copy"></button><small><span data-i="exp"></span> <b id="expv"></b></small></div>
+  </div>
+ </div>
+</header>
+
+<div class="stats">
+ <div><b data-n="48213"></b><span data-i="s1"></span></div>
+ <div><b data-n="3902"></b><span data-i="s2"></span></div>
+ <div><b id="up"></b><span data-i="s3"></span></div>
+</div>
+
+<section class="two">
+ <div>
+  <div class="h"><h3 data-i="lbT"></h3><span data-i="lbS"></span></div>
+  <table class="lb"><thead><tr><th data-i="c1"></th><th data-i="c2"></th><th data-i="c3"></th></tr></thead><tbody id="lb"></tbody></table>
+ </div>
+ <div id="guide">
+  <div class="h"><h3 data-i="gT"></h3></div>
+  <ol class="guide">
+   <li><div><b data-i="g1"></b><span data-i="g1d"></span></div></li>
+   <li><div><b data-i="g2"></b><span data-i="g2d"></span></div></li>
+   <li><div><b data-i="g3"></b><span data-i="g3d"></span></div></li>
+  </ol>
+ </div>
+</section>
+
+<section id="faq">
+ <div class="h"><h3 data-i="fT"></h3></div>
+ <details><summary data-i="q1"></summary><p data-i="a1"></p></details>
+ <details><summary data-i="q2"></summary><p data-i="a2"></p></details>
+ <details><summary data-i="q3"></summary><p data-i="a3"></p></details>
+ <details><summary data-i="q4"></summary><p data-i="a4"></p></details>
+</section>
+</div>
+
+<div class="help" id="support">
+ <div class="w">
+  <div><h3 data-i="hT"></h3><p data-i="hD"></p></div>
+  <a class="btn" href="https://discord.gg/FILL" data-i="hB"></a>
+ </div>
+</div>
+<div class="w"><footer><span>&copy; 2026 GetKey</span><span data-i="note"></span></footer></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const L={
+vi:{nGuide:'Hướng dẫn',nFaq:'Câu hỏi',nSup:'Hỗ trợ',login:'Đăng nhập Discord',logout:'Đăng xuất',
+h1a:'Một key.',h1b:'Ba bước.',lead:'Hoàn thành ba checkpoint để nhận key dùng trong 24 giờ. Không cần thanh toán.',
+pTitle:'Nhận key',hintOut:'Đăng nhập Discord để bắt đầu.',hintIn:'Xin chào, {u}. Hoàn thành lần lượt từng bước.',
+c1t:'Checkpoint 1',c1d:'Vượt link Link4M thứ nhất',c2t:'Checkpoint 2',c2d:'Vượt link Link4M thứ hai',c3t:'Checkpoint 3',c3d:'Vượt link Link4M cuối cùng',
+start:'Bắt đầu',wait:'Đang xác minh {s}s',done:'Hoàn thành',locked:'Đã khóa',copy:'Sao chép key',copied:'Đã sao chép key',hintKey:'Key của bạn đang hoạt động.',lbEmpty:'Tuần này chưa có ai',copyHold:'Nhấn giữ vào key để sao chép',exp:'Hết hạn sau',prev:'Hoàn thành bước trước trước',unlocked:'Key đã mở khóa',making:'Đang tạo link...',cpOk:'Hoàn thành checkpoint',cpFast:'Bạn vượt link quá nhanh. Hãy làm lại bước này',cpBad:'Link không hợp lệ hoặc đã hết hạn, hãy thử lại',expired:'Key đã hết hạn, hãy lấy key mới',err:'Có lỗi, thử lại sau',
+s1:'Key đã cấp',s2:'Người dùng hoạt động',s3:'Hiệu lực mỗi key',lbT:'Bảng xếp hạng',lbS:'Tuần này',c1:'Hạng',c2:'Người dùng',c3:'Key',
+gT:'Hướng dẫn',g1:'Đăng nhập Discord',g1d:'Dùng tài khoản của bạn để hệ thống ghi nhận key.',g2:'Hoàn thành 3 checkpoint',g2d:'Mỗi bước là một link Link4M, làm lần lượt.',g3:'Sao chép key',g3d:'Dán key vào ứng dụng của bạn trước khi hết hạn.',
+fT:'Câu hỏi thường gặp',q1:'Key dùng được bao lâu?',a1:'Mỗi key có hiệu lực 24 giờ kể từ lúc nhận. Hết hạn thì bạn quay lại nhận key mới.',
+q2:'Vì sao phải đăng nhập Discord?',a2:'Để gắn key với tài khoản của bạn và tránh lạm dụng. Chúng tôi chỉ đọc tên và ảnh đại diện.',
+q3:'Checkpoint không mở được thì sao?',a3:'Tắt trình chặn quảng cáo cho trang này, tải lại rồi thử lại. Vẫn lỗi thì vào Discord hỗ trợ.',
+q4:'Tôi có bị tính phí không?',a4:'Không. Nhận key hoàn toàn miễn phí.',
+hT:'Cần hỗ trợ?',hD:'Đội ngũ trả lời trên Discord, thường trong vài phút.',hB:'Vào Discord hỗ trợ',note:''},
+en:{nGuide:'Guide',nFaq:'FAQ',nSup:'Support',login:'Sign in with Discord',logout:'Sign out',
+h1a:'One key.',h1b:'Three steps.',lead:'Complete three checkpoints to receive a key valid for 24 hours. No payment required.',
+pTitle:'Get your key',hintOut:'Sign in with Discord to begin.',hintIn:'Welcome, {u}. Complete each step in order.',
+c1t:'Checkpoint 1',c1d:'Pass the first Link4M link',c2t:'Checkpoint 2',c2d:'Pass the second Link4M link',c3t:'Checkpoint 3',c3d:'Pass the final Link4M link',
+start:'Start',wait:'Verifying {s}s',done:'Completed',locked:'Locked',copy:'Copy key',copied:'Key copied',hintKey:'Your key is active.',lbEmpty:'No one yet this week',copyHold:'Press and hold the key to copy',exp:'Expires in',prev:'Finish the previous step first',unlocked:'Key unlocked',making:'Creating link...',cpOk:'Checkpoint completed',cpFast:'That was too fast. Please redo this step',cpBad:'Link invalid or expired, please retry',expired:'Your key expired, get a new one',err:'Something went wrong, try again',
+s1:'Keys issued',s2:'Active users',s3:'Validity per key',lbT:'Leaderboard',lbS:'This week',c1:'Rank',c2:'User',c3:'Keys',
+gT:'Guide',g1:'Sign in with Discord',g1d:'Your account lets us tie the key to you.',g2:'Complete 3 checkpoints',g2d:'Each step is a Link4M link. Go in order.',g3:'Copy your key',g3d:'Paste it into your app before it expires.',
+fT:'Frequently asked questions',q1:'How long does a key last?',a1:'Each key is valid for 24 hours from the moment you get it. Come back for a new one after that.',
+q2:'Why sign in with Discord?',a2:'It ties the key to your account and prevents abuse. We only read your name and avatar.',
+q3:'A checkpoint will not open. What now?',a3:'Turn off your ad blocker for this page, reload, and try again. Still stuck? Ask in our Discord.',
+q4:'Does it cost anything?',a4:'No. Getting a key is free.',
+hT:'Need help?',hD:'Our team answers on Discord, usually within minutes.',hB:'Join support Discord',note:''}};
+let lang='vi',me={user:null,step:0,key:null},off=0,busy=false,tmr,stats={issued:0,active:0,leaderboard:[]};
+const $=s=>document.querySelector(s),t=(k,v={})=>L[lang][k].replace(/\{(\w+)\}/g,(_,x)=>v[x]);
+const nf=n=>n.toLocaleString(lang==='vi'?'vi-VN':'en-US');
+async function api(p,o={}){
+ const r=await fetch(p,{method:o.m||'GET',credentials:'same-origin',headers:{'content-type':'application/json','x-gk':'1'},body:o.b?JSON.stringify(o.b):undefined});
+ const j=await r.json().catch(()=>({}));
+ if(!r.ok)throw Object.assign(new Error(j.error||'err'),{code:j.error});return j}
+function toast(m){const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(tmr);tmr=setTimeout(()=>e.classList.remove('on'),2200)}
+function rows(){
+ $('#rows').innerHTML=[1,2,3].map((n,i)=>{const st=i<me.step?'done':i===me.step?(busy?'loading':'active'):'locked';
+  return `<div class="row" data-st="${st}"><div><b>${t('c'+n+'t')}</b><small>${t('c'+n+'d')}</small></div><button class="btn s" data-i="${i}">${st==='done'?t('done'):st==='locked'?t('locked'):t('start')}</button></div>`}).join('');
+ document.querySelectorAll('.seg i').forEach((e,i)=>e.classList.toggle('on',i<me.step||!!me.key));
+}
+function render(){
+ const u=me.user;
+ document.documentElement.lang=lang;
+ document.querySelectorAll('[data-i]').forEach(e=>{if(L[lang][e.dataset.i]&&!e.matches('.s'))e.textContent=t(e.dataset.i)});
+ const ns=[stats.issued,stats.active];
+ document.querySelectorAll('[data-n]').forEach((e,i)=>e.textContent=nf(ns[i]||0));
+ $('#up').textContent='24h';
+ $('#login').textContent=u?u.name+' · '+t('logout'):t('login');$('#login').classList.toggle('in',!!u);
+ $('#gateBtn').textContent=t('login');
+ $('#hint').textContent=u?(me.key?t('hintKey'):t('hintIn',{u:u.name})):t('hintOut');
+ $('#rows').hidden=!!me.key;   // có key rồi thì ẩn các bước, chỉ hiện key
+ $('#gate').hidden=!!u;$('#flow').hidden=!u;
+ $('#copy').textContent=t('copy');
+ $('#lb').innerHTML=!stats.leaderboard.length?`<tr><td colspan="3" style="color:var(--mute)">${t('lbEmpty')}</td></tr>`:stats.leaderboard.map((r,i)=>`<tr><td>${i+1}</td><td></td><td>${nf(r.count)}</td></tr>`).join('');
+ if(stats.leaderboard.length)[...$('#lb').rows].forEach((tr,i)=>tr.cells[1].textContent=stats.leaderboard[i].name);   // textContent: tên user không chèn được HTML
+ document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===lang));
+ rows();
+ $('#key').hidden=!me.key;
+ if(me.key)$('#kt').textContent=me.key.value;
+}
+async function load(){try{me=await api('/api/me');off=me.now-Date.now();if(me.user&&me.step>=3&&!me.key){me.key=await api('/api/key',{m:'POST'});me.step=0}}catch(e){}render()}
+async function loadStats(){try{stats=await api('/api/stats');render()}catch(e){}}
+async function logout(){try{await api('/api/logout',{m:'POST'})}catch(e){}me={user:null,step:0,key:null};render()}
+const go=()=>me.user?logout():(location.href='/auth/discord');
+$('#login').onclick=go;$('#gateBtn').onclick=go;
+$('#rows').addEventListener('click',async e=>{
+ const b=e.target.closest('.s');if(!b||busy)return;const i=+b.dataset.i;
+ if(i>me.step){toast(t('prev'));return}if(i<me.step)return;
+ busy=true;b.textContent=t('making');
+ try{const r=await api('/api/cp/start',{m:'POST',b:{step:i}});location.href=r.url;return}   // cùng tab: vượt link xong Link4M đưa về /cp/done
+ catch(err){toast(t('err'));busy=false;await load()}});
+addEventListener('pageshow',e=>{if(e.persisted){busy=false;load()}});
+$('#copy').onclick=async()=>{
+ try{await navigator.clipboard.writeText($('#kt').textContent);toast(t('copied'))}
+ catch(e){const a=document.createElement('textarea');a.value=$('#kt').textContent;a.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(a);a.focus();a.select();a.setSelectionRange(0,99);let ok=false;try{ok=document.execCommand('copy')}catch(_){}a.remove();toast(t(ok?'copied':'copyHold'))}};
+setInterval(()=>{                       // đếm ngược theo giờ server; hết 24h thì reset để lấy key mới
+ if(!me.key)return;
+ const d=me.key.exp-(Date.now()+off),p=n=>String(n).padStart(2,'0');
+ if(d<=0){me.key=null;me.step=0;toast(t('expired'));load();return}
+ $('#expv').textContent=p(Math.floor(d/36e5))+':'+p(Math.floor(d/6e4)%60)+':'+p(Math.floor(d/1e3)%60)},1000);
+document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem('gk-lang',lang)}catch(e){}render()});
+try{const s=localStorage.getItem('gk-lang');if(s==='vi'||s==='en')lang=s}catch(e){}
+{const q=new URLSearchParams(location.search),m={ok:'cpOk',key:'unlocked',fast:'cpFast',bad:'cpBad'}[q.get('cp')]||(q.get('e')==='auth'&&'err');
+ if(m){history.replaceState(null,'',location.pathname);setTimeout(()=>toast(t(m)),300)}
+ if(q.get('cp')==='key')setTimeout(()=>$('#panel').scrollIntoView({behavior:'smooth',block:'start'}),500)}
+render();load();loadStats();setInterval(loadStats,60000);
+</script>
+</body>
+</html>

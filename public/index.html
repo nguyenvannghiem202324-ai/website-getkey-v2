@@ -150,6 +150,14 @@ a.btn{text-decoration:none;display:inline-block;text-align:center}
   <h2 data-i="pTitle"></h2>
   <p class="hint" id="hint"></p>
   <div id="gate" class="gate"><button class="btn" id="gateBtn" style="width:100%"></button></div>
+  <!-- Added: admin key bypass form; verification happens on server.js -->
+  <div id="adminBox" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
+   <label for="adminKey" id="adminLabel" style="display:block;font-size:13px;color:var(--mute);margin-bottom:8px">Admin Key</label>
+   <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <input id="adminKey" type="password" autocomplete="off" placeholder="Nhập Admin Key" style="flex:1;min-width:0;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:2px;background:var(--card);color:var(--ink);font:inherit">
+    <button class="btn" id="adminSubmit" type="button">Xác minh</button>
+   </div>
+  </div>
   <div id="flow" hidden>
    <div id="rows"></div>
    <div class="key" id="key" hidden><code id="kt"></code><button class="btn" id="copy"></button><small><span data-i="exp"></span> <b id="expv"></b></small></div>
@@ -198,7 +206,7 @@ a.btn{text-decoration:none;display:inline-block;text-align:center}
 
 <script>
 const L={
-vi:{nGuide:'Hướng dẫn',nFaq:'Câu hỏi',nSup:'Hỗ trợ',login:'Đăng nhập Discord',logout:'Đăng xuất',
+vi:{adminLabel:'Admin Key',adminPlaceholder:'Nhập Admin Key',adminSubmit:'Xác minh',adminNeedLogin:'Hãy đăng nhập Discord trước khi dùng Admin Key.',adminWrong:'Admin Key không đúng.',adminSuccess:'Admin Key hợp lệ. Đã bỏ qua checkpoint.',nGuide:'Hướng dẫn',nFaq:'Câu hỏi',nSup:'Hỗ trợ',login:'Đăng nhập Discord',logout:'Đăng xuất',
 h1a:'Một key.',h1b:'Ba bước.',lead:'Hoàn thành ba checkpoint để nhận key dùng trong 24 giờ. Không cần thanh toán.',
 pTitle:'Nhận key',hintOut:'Đăng nhập Discord để bắt đầu.',hintIn:'Xin chào, {u}. Hoàn thành lần lượt từng bước.',
 c1t:'Checkpoint 1',c1d:'Vượt link Link4M thứ nhất',c2t:'Checkpoint 2',c2d:'Vượt link Link4M thứ hai',c3t:'Checkpoint 3',c3d:'Vượt link Link4M cuối cùng',
@@ -210,7 +218,7 @@ q2:'Vì sao phải đăng nhập Discord?',a2:'Để gắn key với tài khoả
 q3:'Checkpoint không mở được thì sao?',a3:'Tắt trình chặn quảng cáo cho trang này, tải lại rồi thử lại. Vẫn lỗi thì vào Discord hỗ trợ.',
 q4:'Tôi có bị tính phí không?',a4:'Không. Nhận key hoàn toàn miễn phí.',
 hT:'Cần hỗ trợ?',hD:'Đội ngũ trả lời trên Discord, thường trong vài phút.',hB:'Vào Discord hỗ trợ',note:''},
-en:{nGuide:'Guide',nFaq:'FAQ',nSup:'Support',login:'Sign in with Discord',logout:'Sign out',
+en:{adminLabel:'Admin Key',adminPlaceholder:'Enter Admin Key',adminSubmit:'Verify',adminNeedLogin:'Sign in with Discord before using the Admin Key.',adminWrong:'Incorrect Admin Key.',adminSuccess:'Admin Key accepted. Checkpoints skipped.',nGuide:'Guide',nFaq:'FAQ',nSup:'Support',login:'Sign in with Discord',logout:'Sign out',
 h1a:'One key.',h1b:'Three steps.',lead:'Complete three checkpoints to receive a key valid for 24 hours. No payment required.',
 pTitle:'Get your key',hintOut:'Sign in with Discord to begin.',hintIn:'Welcome, {u}. Complete each step in order.',
 c1t:'Checkpoint 1',c1d:'Pass the first Link4M link',c2t:'Checkpoint 2',c2d:'Pass the second Link4M link',c3t:'Checkpoint 3',c3d:'Pass the final Link4M link',
@@ -260,6 +268,22 @@ async function loadStats(){try{stats=await api('/api/stats');render()}catch(e){}
 async function logout(){try{await api('/api/logout',{m:'POST'})}catch(e){}me={user:null,step:0,key:null};render()}
 const go=()=>me.user?logout():(location.href='/auth/discord');
 $('#login').onclick=go;$('#gateBtn').onclick=go;
+// Added: submit admin key; server validates it and issues the user's key without checkpoints.
+$('#adminLabel').textContent=t('adminLabel');
+$('#adminKey').placeholder=t('adminPlaceholder');
+$('#adminSubmit').textContent=t('adminSubmit');
+$('#adminSubmit').onclick=async()=>{
+ const value=$('#adminKey').value;
+ if(!value){toast(t('adminWrong'));return}
+ $('#adminSubmit').disabled=true;
+ try{
+  const r=await api('/api/admin/unlock',{m:'POST',b:{key:value}});
+  me.key=r;me.step=0;$('#adminKey').value='';render();toast(t('adminSuccess'));
+ }catch(err){
+  if(err.code==='login'){toast(t('adminNeedLogin'));}
+  else toast(err.code==='invalid_admin_key'?t('adminWrong'):t('err'));
+ }finally{$('#adminSubmit').disabled=false}
+};
 $('#rows').addEventListener('click',async e=>{
  const b=e.target.closest('.s');if(!b||busy)return;const i=+b.dataset.i;
  if(i>me.step){toast(t('prev'));return}if(i<me.step)return;
@@ -275,7 +299,7 @@ setInterval(()=>{                       // đếm ngược theo giờ server; h�
  const d=me.key.exp-(Date.now()+off),p=n=>String(n).padStart(2,'0');
  if(d<=0){me.key=null;me.step=0;toast(t('expired'));load();return}
  $('#expv').textContent=p(Math.floor(d/36e5))+':'+p(Math.floor(d/6e4)%60)+':'+p(Math.floor(d/1e3)%60)},1000);
-document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem('gk-lang',lang)}catch(e){}render()});
+document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem('gk-lang',lang)}catch(e){}$('#adminLabel').textContent=t('adminLabel');$('#adminKey').placeholder=t('adminPlaceholder');$('#adminSubmit').textContent=t('adminSubmit');render()});
 try{const s=localStorage.getItem('gk-lang');if(s==='vi'||s==='en')lang=s}catch(e){}
 {const q=new URLSearchParams(location.search),m={ok:'cpOk',key:'unlocked',fast:'cpFast',bad:'cpBad'}[q.get('cp')]||(q.get('e')==='auth'&&'err');
  if(m){history.replaceState(null,'',location.pathname);setTimeout(()=>toast(t(m)),300)}

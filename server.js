@@ -21,6 +21,7 @@ const CFG = {
   secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'), // đặt cố định, không thì restart là mất phiên,
   dcId: process.env.DISCORD_CLIENT_ID,                           // FILL: discord.com/developers/applications
   dcSecret: process.env.DISCORD_CLIENT_SECRET,                   // FILL
+  adminKey: process.env.ADMIN_KEY || 'nhathub812012', // Added: Admin Key bypass (prefer setting ADMIN_KEY in environment)
   prod: process.env.NODE_ENV === 'production' || !!process.env.RENDER,
   trustProxy: process.env.TRUST_PROXY === '1' || !!process.env.RENDER, // Render chạy sau proxy
   keyTtl: +process.env.KEY_TTL_MS || 24 * 3600e3,                // mỗi key sống 24h
@@ -233,6 +234,19 @@ async function api(req, res, p, u, uid) {
 
   if (p === '/api/logout') { setCookie(res, 'sid', '', 0); return json(res, 200, { ok: true }); }
   if (limited(ip, 'p', 40)) return json(res, 429, { error: 'rate_limit' });
+
+  // Added: server-side Admin Key validation. A valid key skips all checkpoints and issues a normal timed key.
+  if (p === '/api/admin/unlock') {
+    const input = String((await body(req)).key || '');
+    const expected = String(CFG.adminKey || '');
+    const a = Buffer.from(input);
+    const b = Buffer.from(expected);
+    if (!input || !expected || a.length !== b.length || !crypto.timingSafeEqual(a, b))
+      return json(res, 403, { error: 'invalid_admin_key' });
+    const current = activeKey(uid);
+    if (current) return json(res, 200, current);
+    return json(res, 200, issue(uid));
+  }
 
   const pr = db.prog[uid] || (db.prog[uid] = { step: 0 });
   if (p === '/api/cp/start') {

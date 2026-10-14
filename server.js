@@ -158,6 +158,10 @@ function authStart(req, res) {
   }
   const state = crypto.randomBytes(16).toString('hex');
   setCookie(res, 'st', state, 600);
+
+    console.log('DISCORD CALLBACK:', CFG.base + '/auth/callback');
+      const q = new URLSearchParams({ client_id: CFG.dcId, response_type: 'code', redirect_uri: CFG.base + '/auth/callback', scope: 'identify', state });
+      
   const q = new URLSearchParams({ client_id: CFG.dcId, response_type: 'code', redirect_uri: CFG.base + '/auth/callback', scope: 'identify', state });
   redirect(res, 'https://discord.com/oauth2/authorize?' + q);
 }
